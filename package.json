@@ -2,13 +2,13 @@
   "name": "movie-catalog-cloud",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "backend/server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node backend/server.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/otvprint-unifor/movie-catalog-cloud.git"
+    "url": "https://github.com/otvprint-unifor/movie-catalog-cloud.git"
   },
   "keywords": [],
   "author": "",
