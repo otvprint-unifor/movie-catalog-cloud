@@ -46,18 +46,21 @@ app.post("/movies", async (req, res) => {
         const title = req.body?.title;
         const year = req.body?.year;
         const genre = req.body?.genre;
+        const poster = req.body?.poster;
 
         const newMovie = await db.collection("movies").add({
-            title,
-            year,
-            genre
+        title,
+        year,
+        genre,
+        poster
         });
 
         res.json({
-            id: newMovie.id,
-            title,
-            year,
-            genre
+        id: newMovie.id,
+        title,
+        year,
+        genre,
+        poster
         });
 
     } catch (error) {

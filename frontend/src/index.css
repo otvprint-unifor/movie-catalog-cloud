@@ -1,0 +1,53 @@
+body{
+  margin:0;
+  background:#0f0f0f;
+  color:white;
+  font-family:Arial, Helvetica, sans-serif;
+}
+
+.container{
+  padding:40px;
+}
+
+h1{
+  margin-bottom:30px;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,200px);
+  gap:20px;
+}
+
+.card{
+  background:#1c1c1c;
+  padding:15px;
+  border-radius:10px;
+  transition:0.3s;
+}
+
+.card:hover{
+  transform:scale(1.05);
+  background:#2a2a2a;
+}
+
+.form{
+  margin-bottom:30px;
+  display:flex;
+  gap:10px;
+}
+
+.form input{
+  padding:8px;
+  border-radius:6px;
+  border:none;
+}
+
+.form button{
+  padding:8px 14px;
+  background:#e50914;
+  color:white;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+}
