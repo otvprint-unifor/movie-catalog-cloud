@@ -1,5 +1,11 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
+import { auth } from "./firebaseAuth";
+import {
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut
+} from "firebase/auth";
 import "./App.css";
 
 export default function App() {
@@ -7,19 +13,71 @@ export default function App() {
   const API = "https://movie-catalog-cloud-production.up.railway.app";
   const TMDB_KEY = "4a66de4a250179475bc5045edb085801";
 
+  const [user, setUser] = useState(null);
+
+  const [email,setEmail] = useState("");
+  const [password,setPassword] = useState("");
+
   const [movies,setMovies] = useState([]);
   const [search,setSearch] = useState("");
   const [results,setResults] = useState([]);
   const [selected,setSelected] = useState(null);
 
+  /* ---------- LOGIN ---------- */
+
+  function login(){
+
+    signInWithEmailAndPassword(auth,email,password)
+      .then((userCredential)=>{
+        setUser(userCredential.user);
+      })
+      .catch(()=>{
+        alert("Email ou senha inválidos");
+      });
+
+  }
+
+  /* ---------- REGISTER ---------- */
+
+  function register(){
+
+    createUserWithEmailAndPassword(auth,email,password)
+      .then((userCredential)=>{
+        setUser(userCredential.user);
+      })
+      .catch(()=>{
+        alert("Erro ao criar conta");
+      });
+
+  }
+
+  /* ---------- LOGOUT ---------- */
+
+  function logout(){
+
+    signOut(auth).then(()=>{
+      setUser(null);
+    });
+
+  }
+
+  /* ---------- LOAD MOVIES ---------- */
+
   function loadMovies(){
-    axios.get(API + "/movies")
-    .then(res=>setMovies(res.data));
+
+    axios
+      .get(`${API}/movies/${user.uid}`)
+      .then(res=>setMovies(res.data));
+
   }
 
   useEffect(()=>{
-    loadMovies();
-  },[]);
+    if(user){
+      loadMovies();
+    }
+  },[user]);
+
+  /* ---------- SEARCH MOVIES ---------- */
 
   function searchMovies(value){
 
@@ -31,71 +89,184 @@ export default function App() {
     }
 
     axios
-    .get(`https://api.themoviedb.org/3/search/movie?api_key=${TMDB_KEY}&query=${value}`)
-    .then(res=>{
-      setResults(res.data.results.slice(0,8));
-    });
+      .get(`https://api.themoviedb.org/3/search/movie?api_key=${TMDB_KEY}&query=${value}`)
+      .then(res=>{
+        setResults(res.data.results.slice(0,8));
+      });
+
   }
+
+  /* ---------- SELECT MOVIE ---------- */
 
   function selectMovie(movie){
 
     setSelected({
       title: movie.title,
       year: movie.release_date?.split("-")[0],
-      genre: "Filme",
-      poster: `https://image.tmdb.org/t/p/w300${movie.poster_path}`,
+      genre:"Filme",
+      poster:`https://image.tmdb.org/t/p/w300${movie.poster_path}`,
       watched:false,
       favorite:false,
       rating:0
     });
 
     setResults([]);
+
   }
+
+  /* ---------- ADD MOVIE ---------- */
 
   function addMovie(){
 
-    axios.post(API + "/movies", selected)
+    axios.post(`${API}/movies`,{
+      ...selected,
+      userId:user.uid
+    })
     .then(()=>{
       setSelected(null);
       setSearch("");
       loadMovies();
     });
+
   }
 
+  /* ---------- DELETE ---------- */
+
   function deleteMovie(id){
-    axios.delete(API + "/movies/" + id)
-    .then(()=>loadMovies());
+
+    axios
+      .delete(`${API}/movies/${id}`)
+      .then(loadMovies);
+
   }
+
+  /* ---------- FAVORITE ---------- */
 
   function toggleFavorite(movie){
 
-    axios.put(API + "/movies/" + movie.id,{
+    axios.put(`${API}/movies/${movie.id}`,{
       ...movie,
-      favorite: !movie.favorite
+      favorite:!movie.favorite
     }).then(loadMovies);
+
   }
+
+  /* ---------- WATCHED ---------- */
 
   function toggleWatched(movie){
 
-    axios.put(API + "/movies/" + movie.id,{
+    axios.put(`${API}/movies/${movie.id}`,{
       ...movie,
-      watched: !movie.watched
+      watched:!movie.watched
     }).then(loadMovies);
+
   }
+
+  /* ---------- RATING ---------- */
 
   function rateMovie(movie,value){
 
-    axios.put(API + "/movies/" + movie.id,{
+    axios.put(`${API}/movies/${movie.id}`,{
       ...movie,
       rating:value
     }).then(loadMovies);
+
   }
 
-  return (
+  /* ---------- STATS ---------- */
+
+  const totalMovies = movies.length;
+  const watchedMovies = movies.filter(m=>m.watched).length;
+  const favoriteMovies = movies.filter(m=>m.favorite).length;
+
+  const avgRating =
+    movies.length > 0
+      ? (
+          movies.reduce((a,m)=>a+(m.rating||0),0)
+          / movies.length
+        ).toFixed(1)
+      : 0;
+
+  /* ---------- LOGIN SCREEN ---------- */
+
+  if(!user){
+
+    return(
+
+      <div className="login">
+
+        <h2>Login</h2>
+
+        <input
+          placeholder="Email"
+          value={email}
+          onChange={e=>setEmail(e.target.value)}
+        />
+
+        <input
+          type="password"
+          placeholder="Senha"
+          value={password}
+          onChange={e=>setPassword(e.target.value)}
+        />
+
+        <button onClick={login}>
+          Entrar
+        </button>
+
+        <button onClick={register}>
+          Criar conta
+        </button>
+
+      </div>
+
+    )
+
+  }
+
+  /* ---------- APP ---------- */
+
+  return(
 
     <div className="container">
 
-      <h1>Catálogo de Filmes 🎬</h1>
+      <div className="topbar">
+
+        <h1>Catálogo de Filmes 🎬</h1>
+
+        <button className="logout" onClick={logout}>
+          Logout
+        </button>
+
+      </div>
+
+      {/* DASHBOARD */}
+
+      <div className="stats">
+
+        <div className="stat">
+          <h3>{totalMovies}</h3>
+          <p>Filmes</p>
+        </div>
+
+        <div className="stat">
+          <h3>{watchedMovies}</h3>
+          <p>Assistidos</p>
+        </div>
+
+        <div className="stat">
+          <h3>{favoriteMovies}</h3>
+          <p>Favoritos</p>
+        </div>
+
+        <div className="stat">
+          <h3>{avgRating}</h3>
+          <p>Média ⭐</p>
+        </div>
+
+      </div>
+
+      {/* SEARCH */}
 
       <input
         className="search"
@@ -104,39 +275,54 @@ export default function App() {
         onChange={(e)=>searchMovies(e.target.value)}
       />
 
+      {/* SEARCH RESULTS */}
+
       <div className="results">
+
         {results.map(movie=>(
+
           <div
             className="poster"
             key={movie.id}
             onClick={()=>selectMovie(movie)}
           >
-            {movie.poster_path && (
+
+            {movie.poster_path &&(
+
               <img
                 src={`https://image.tmdb.org/t/p/w200${movie.poster_path}`}
                 alt={movie.title}
               />
+
             )}
+
           </div>
+
         ))}
+
       </div>
 
-      {selected && (
+      {/* SELECTED MOVIE */}
+
+      {selected &&(
 
         <div className="selected">
 
           <img src={selected.poster} width="120"/>
 
           <h3>{selected.title}</h3>
+
           <p>Ano: {selected.year}</p>
-          <p>Gênero: {selected.genre}</p>
 
           <button onClick={addMovie}>
             Adicionar ao catálogo
           </button>
 
         </div>
+
       )}
+
+      {/* GRID */}
 
       <h2>Filmes adicionados</h2>
 
@@ -146,43 +332,68 @@ export default function App() {
 
           <div className="card" key={movie.id}>
 
-            {movie.poster && (
-              <img src={movie.poster} alt={movie.title}/>
-            )}
+            <div className="poster-container">
 
-            <h3>{movie.title}</h3>
-            <p>{movie.year}</p>
+              {movie.poster &&(
+                <img src={movie.poster} alt={movie.title}/>
+              )}
 
-            <div className="rating">
+              {movie.favorite &&(
+                <div className="badge favorite">⭐</div>
+              )}
 
-              {[1,2,3,4,5].map(star=>(
-                <span
-                  key={star}
-                  onClick={()=>rateMovie(movie,star)}
-                  style={{
-                    cursor:"pointer",
-                    color: movie.rating >= star ? "gold":"gray"
-                  }}
-                >
-                  ★
-                </span>
-              ))}
+              {movie.watched &&(
+                <div className="badge watched">Assistido</div>
+              )}
+
+              {movie.rating>0 &&(
+                <div className="badge rating">
+                  ⭐ {movie.rating}/5
+                </div>
+              )}
 
             </div>
 
-            <div className="actions">
+            <div className="info">
 
-              <button onClick={()=>toggleWatched(movie)}>
-                {movie.watched ? "Assistido ✓":"Marcar assistido"}
-              </button>
+              <h3>{movie.title}</h3>
 
-              <button onClick={()=>toggleFavorite(movie)}>
-                {movie.favorite ? "⭐ Favorito":"Favoritar"}
-              </button>
+              <p>{movie.year}</p>
 
-              <button onClick={()=>deleteMovie(movie.id)}>
-                Remover
-              </button>
+              <div className="stars">
+
+                {[1,2,3,4,5].map(star=>(
+
+                  <span
+                    key={star}
+                    onClick={()=>rateMovie(movie,star)}
+                    style={{
+                      cursor:"pointer",
+                      color: movie.rating>=star ? "gold":"gray"
+                    }}
+                  >
+                    ★
+                  </span>
+
+                ))}
+
+              </div>
+
+              <div className="actions">
+
+                <button onClick={()=>toggleWatched(movie)}>
+                  {movie.watched ? "Assistido ✓":"Marcar assistido"}
+                </button>
+
+                <button onClick={()=>toggleFavorite(movie)}>
+                  {movie.favorite ? "⭐ Favorito":"Favoritar"}
+                </button>
+
+                <button onClick={()=>deleteMovie(movie.id)}>
+                  Remover
+                </button>
+
+              </div>
 
             </div>
 
@@ -194,5 +405,6 @@ export default function App() {
 
     </div>
 
-  );
+  )
+
 }
