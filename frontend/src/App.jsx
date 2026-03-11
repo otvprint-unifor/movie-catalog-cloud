@@ -1,12 +1,12 @@
 import axios from "axios";
-import { useEffect, useState } from "react";
-import { auth } from "./firebaseAuth";
 import {
-  signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
   signOut
 } from "firebase/auth";
+import { useEffect, useState } from "react";
 import "./App.css";
+import { auth } from "./firebaseAuth";
 
 export default function App() {
 
@@ -57,6 +57,7 @@ export default function App() {
 
     signOut(auth).then(()=>{
       setUser(null);
+      setMovies([]);
     });
 
   }
@@ -65,16 +66,25 @@ export default function App() {
 
   function loadMovies(){
 
+    if(!user?.uid) return;
+
     axios
       .get(`${API}/movies/${user.uid}`)
-      .then(res=>setMovies(res.data));
+      .then(res=>{
+        setMovies(res.data);
+      })
+      .catch(err=>{
+        console.log("Erro ao carregar filmes",err);
+      });
 
   }
 
   useEffect(()=>{
-    if(user){
+
+    if(user?.uid){
       loadMovies();
     }
+
   },[user]);
 
   /* ---------- SEARCH MOVIES ---------- */
@@ -92,6 +102,9 @@ export default function App() {
       .get(`https://api.themoviedb.org/3/search/movie?api_key=${TMDB_KEY}&query=${value}`)
       .then(res=>{
         setResults(res.data.results.slice(0,8));
+      })
+      .catch(err=>{
+        console.log(err);
       });
 
   }
@@ -118,6 +131,8 @@ export default function App() {
 
   function addMovie(){
 
+    if(!selected || !user?.uid) return;
+
     axios.post(`${API}/movies`,{
       ...selected,
       userId:user.uid
@@ -126,6 +141,9 @@ export default function App() {
       setSelected(null);
       setSearch("");
       loadMovies();
+    })
+    .catch(err=>{
+      console.log("Erro ao adicionar filme",err);
     });
 
   }
@@ -136,7 +154,8 @@ export default function App() {
 
     axios
       .delete(`${API}/movies/${id}`)
-      .then(loadMovies);
+      .then(()=>loadMovies())
+      .catch(err=>console.log(err));
 
   }
 
@@ -176,7 +195,9 @@ export default function App() {
   /* ---------- STATS ---------- */
 
   const totalMovies = movies.length;
+
   const watchedMovies = movies.filter(m=>m.watched).length;
+
   const favoriteMovies = movies.filter(m=>m.favorite).length;
 
   const avgRating =

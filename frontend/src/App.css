@@ -253,3 +253,23 @@ h1{
   color:white;
   cursor:pointer;
 }
+
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:30px;
+}
+
+.logout{
+  padding:8px 14px;
+  background:#e50914;
+  color:white;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+}
+
+.logout:hover{
+  background:#b20710;
+}

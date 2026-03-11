@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { auth } from "./firebaseAuth";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import {
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword
+} from "firebase/auth";
 
 export default function Login({ onLogin }) {
 
@@ -15,6 +18,18 @@ export default function Login({ onLogin }) {
       })
       .catch(()=>{
         alert("Login inválido");
+      });
+
+  }
+
+  function register(){
+
+    createUserWithEmailAndPassword(auth,email,password)
+      .then(()=>{
+        onLogin();
+      })
+      .catch(()=>{
+        alert("Erro ao criar conta");
       });
 
   }
@@ -44,7 +59,7 @@ export default function Login({ onLogin }) {
 
       <button onClick={register}>
         Criar conta
-    </button>
+      </button>
 
     </div>
 

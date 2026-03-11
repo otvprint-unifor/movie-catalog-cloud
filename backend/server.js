@@ -15,32 +15,48 @@ app.get("/", (req, res) => {
   res.send("API Movie Catalog funcionando");
 });
 
-/* LISTAR FILMES */
+/* ========================= */
+/* LISTAR FILMES DO USUÁRIO  */
+/* ========================= */
 
-app.get("/movies", async (req, res) => {
+app.get("/movies/:userId", async (req, res) => {
   try {
 
-    const snapshot = await db.collection("movies").get();
+    const { userId } = req.params;
 
-    const movies = [];
-
-    snapshot.forEach(doc => {
-      movies.push({
-        id: doc.id,
-        ...doc.data()
+    if (!userId) {
+      return res.status(400).json({
+        error: "userId é obrigatório"
       });
-    });
+    }
+
+    const snapshot = await db
+      .collection("movies")
+      .where("userId", "==", userId)
+      .get();
+
+    const movies = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
 
     res.json(movies);
 
   } catch (error) {
-    res.status(500).json({ error: error.message });
+
+    res.status(500).json({
+      error: error.message
+    });
+
   }
 });
 
+/* ========================= */
 /* ADICIONAR FILME */
+/* ========================= */
 
 app.post("/movies", async (req, res) => {
+
   try {
 
     const {
@@ -50,8 +66,15 @@ app.post("/movies", async (req, res) => {
       poster,
       watched = false,
       favorite = false,
-      rating = 0
+      rating = 0,
+      userId
     } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({
+        error: "userId é obrigatório"
+      });
+    }
 
     const newMovie = await db.collection("movies").add({
       title,
@@ -60,7 +83,8 @@ app.post("/movies", async (req, res) => {
       poster,
       watched,
       favorite,
-      rating
+      rating,
+      userId
     });
 
     res.json({
@@ -71,25 +95,33 @@ app.post("/movies", async (req, res) => {
       poster,
       watched,
       favorite,
-      rating
+      rating,
+      userId
     });
 
   } catch (error) {
-    res.status(500).json({ error: error.message });
+
+    res.status(500).json({
+      error: error.message
+    });
+
   }
+
 });
 
+/* ========================= */
 /* ATUALIZAR FILME */
+/* ========================= */
 
 app.put("/movies/:id", async (req, res) => {
 
   try {
 
-    const movieId = req.params.id;
+    const { id } = req.params;
 
     await db
       .collection("movies")
-      .doc(movieId)
+      .doc(id)
       .update(req.body);
 
     res.json({
@@ -97,20 +129,28 @@ app.put("/movies/:id", async (req, res) => {
     });
 
   } catch (error) {
-    res.status(500).json({ error: error.message });
+
+    res.status(500).json({
+      error: error.message
+    });
+
   }
 
 });
 
+/* ========================= */
 /* DELETAR FILME */
+/* ========================= */
 
 app.delete("/movies/:id", async (req, res) => {
 
   try {
 
+    const { id } = req.params;
+
     await db
       .collection("movies")
-      .doc(req.params.id)
+      .doc(id)
       .delete();
 
     res.json({
@@ -118,7 +158,11 @@ app.delete("/movies/:id", async (req, res) => {
     });
 
   } catch (error) {
-    res.status(500).json({ error: error.message });
+
+    res.status(500).json({
+      error: error.message
+    });
+
   }
 
 });
@@ -126,5 +170,5 @@ app.delete("/movies/:id", async (req, res) => {
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-  console.log("Servidor rodando na porta " + PORT);
+  console.log(`Servidor rodando na porta ${PORT}`);
 });
