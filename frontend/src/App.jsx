@@ -2,7 +2,8 @@ import axios from "axios";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
-  signOut
+  signOut,
+  onAuthStateChanged
 } from "firebase/auth";
 import { useEffect, useState } from "react";
 import "./App.css";
@@ -23,14 +24,33 @@ export default function App() {
   const [results,setResults] = useState([]);
   const [selected,setSelected] = useState(null);
 
+  /* ---------- FIREBASE AUTH LISTENER ---------- */
+
+  useEffect(() => {
+
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
+
+    return () => unsubscribe();
+
+  }, []);
+
+  /* ---------- LOAD MOVIES ---------- */
+
+  useEffect(()=>{
+
+    if(user?.uid){
+      loadMovies();
+    }
+
+  },[user]);
+
   /* ---------- LOGIN ---------- */
 
   function login(){
 
     signInWithEmailAndPassword(auth,email,password)
-      .then((userCredential)=>{
-        setUser(userCredential.user);
-      })
       .catch(()=>{
         alert("Email ou senha inválidos");
       });
@@ -42,9 +62,6 @@ export default function App() {
   function register(){
 
     createUserWithEmailAndPassword(auth,email,password)
-      .then((userCredential)=>{
-        setUser(userCredential.user);
-      })
       .catch(()=>{
         alert("Erro ao criar conta");
       });
@@ -78,14 +95,6 @@ export default function App() {
       });
 
   }
-
-  useEffect(()=>{
-
-    if(user?.uid){
-      loadMovies();
-    }
-
-  },[user]);
 
   /* ---------- SEARCH MOVIES ---------- */
 
