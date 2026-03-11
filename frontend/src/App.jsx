@@ -43,7 +43,10 @@ export default function App() {
       title: movie.title,
       year: movie.release_date?.split("-")[0],
       genre: "Filme",
-      poster: `https://image.tmdb.org/t/p/w300${movie.poster_path}`
+      poster: `https://image.tmdb.org/t/p/w300${movie.poster_path}`,
+      watched:false,
+      favorite:false,
+      rating:0
     });
 
     setResults([]);
@@ -57,6 +60,35 @@ export default function App() {
       setSearch("");
       loadMovies();
     });
+  }
+
+  function deleteMovie(id){
+    axios.delete(API + "/movies/" + id)
+    .then(()=>loadMovies());
+  }
+
+  function toggleFavorite(movie){
+
+    axios.put(API + "/movies/" + movie.id,{
+      ...movie,
+      favorite: !movie.favorite
+    }).then(loadMovies);
+  }
+
+  function toggleWatched(movie){
+
+    axios.put(API + "/movies/" + movie.id,{
+      ...movie,
+      watched: !movie.watched
+    }).then(loadMovies);
+  }
+
+  function rateMovie(movie,value){
+
+    axios.put(API + "/movies/" + movie.id,{
+      ...movie,
+      rating:value
+    }).then(loadMovies);
   }
 
   return (
@@ -90,6 +122,7 @@ export default function App() {
       </div>
 
       {selected && (
+
         <div className="selected">
 
           <img src={selected.poster} width="120"/>
@@ -108,20 +141,56 @@ export default function App() {
       <h2>Filmes adicionados</h2>
 
       <div className="grid">
-    {movies.map(movie=>(
-    <div className="card" key={movie.id}>
 
-      {movie.poster && (
-        <img src={movie.poster} alt={movie.title}/>
-      )}
+        {movies.map(movie=>(
 
-      <h3>{movie.title}</h3>
-      <p>{movie.year}</p>
-      <p>{movie.genre}</p>
+          <div className="card" key={movie.id}>
 
-    </div>
-  ))}
-</div>
+            {movie.poster && (
+              <img src={movie.poster} alt={movie.title}/>
+            )}
+
+            <h3>{movie.title}</h3>
+            <p>{movie.year}</p>
+
+            <div className="rating">
+
+              {[1,2,3,4,5].map(star=>(
+                <span
+                  key={star}
+                  onClick={()=>rateMovie(movie,star)}
+                  style={{
+                    cursor:"pointer",
+                    color: movie.rating >= star ? "gold":"gray"
+                  }}
+                >
+                  ★
+                </span>
+              ))}
+
+            </div>
+
+            <div className="actions">
+
+              <button onClick={()=>toggleWatched(movie)}>
+                {movie.watched ? "Assistido ✓":"Marcar assistido"}
+              </button>
+
+              <button onClick={()=>toggleFavorite(movie)}>
+                {movie.favorite ? "⭐ Favorito":"Favoritar"}
+              </button>
+
+              <button onClick={()=>deleteMovie(movie.id)}>
+                Remover
+              </button>
+
+            </div>
+
+          </div>
+
+        ))}
+
+      </div>
 
     </div>
 
