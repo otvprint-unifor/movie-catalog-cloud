@@ -11,7 +11,7 @@ import { auth } from "./firebaseAuth";
 
 export default function App() {
 
-  const API = "https://movie-catalog-cloud-production.up.railway.app";
+  const API = "https://movie-catalog-grupo29-production.up.railway.app";
   const TMDB_KEY = "4a66de4a250179475bc5045edb085801";
 
   const [user, setUser] = useState(null);
