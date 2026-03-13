@@ -39,22 +39,6 @@ app.get("/", (req, res) => {
   res.send("API Movie Catalog funcionando");
 });
 
-/**
- * @swagger
- * /movies/{userId}:
- *   get:
- *     summary: Lista filmes do usuário
- *     parameters:
- *       - in: path
- *         name: userId
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Lista de filmes
- */
-
 app.get("/movies/:userId", async (req, res) => {
   try {
     const { userId } = req.params;
@@ -80,39 +64,6 @@ app.get("/movies/:userId", async (req, res) => {
   }
 });
 
-/**
- * @swagger
- * /movies:
- *   post:
- *     summary: Adiciona um filme
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               title:
- *                 type: string
- *               year:
- *                 type: string
- *               genre:
- *                 type: string
- *               poster:
- *                 type: string
- *               watched:
- *                 type: boolean
- *               favorite:
- *                 type: boolean
- *               rating:
- *                 type: number
- *               userId:
- *                 type: string
- *     responses:
- *       200:
- *         description: Filme criado
- */
-
 app.post("/movies", async (req, res) => {
   try {
     const {
@@ -123,6 +74,7 @@ app.post("/movies", async (req, res) => {
       watched = false,
       favorite = false,
       rating = 0,
+      review = "",
       userId
     } = req.body;
 
@@ -140,6 +92,7 @@ app.post("/movies", async (req, res) => {
       watched,
       favorite,
       rating,
+      review,
       userId
     });
 
@@ -152,6 +105,7 @@ app.post("/movies", async (req, res) => {
       watched,
       favorite,
       rating,
+      review,
       userId
     });
 
@@ -159,22 +113,6 @@ app.post("/movies", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-
-/**
- * @swagger
- * /movies/{id}:
- *   put:
- *     summary: Atualiza um filme
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Filme atualizado
- */
 
 app.put("/movies/:id", async (req, res) => {
   try {
@@ -191,22 +129,6 @@ app.put("/movies/:id", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-
-/**
- * @swagger
- * /movies/{id}:
- *   delete:
- *     summary: Remove um filme
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Filme removido
- */
 
 app.delete("/movies/:id", async (req, res) => {
   try {
