@@ -1,4 +1,3 @@
-import logo from "./assets/logo.png";
 import axios from "axios";
 import {
 createUserWithEmailAndPassword,
@@ -36,6 +35,7 @@ const [tmdbDetails,setTmdbDetails]=useState(null);
 
 const [activeTab,setActiveTab]=useState("todos");
 const userName = user?.displayName;
+const [toast,setToast] = useState("");
 
 useEffect(()=>{
 
@@ -137,9 +137,17 @@ axios.post(`${API}/movies`,{
 userId:user.uid
 })
 .then(()=>{
+
+setToast("Filme adicionado ao catálogo ✅");
+
+setTimeout(()=>{
+setToast("");
+},2000);
+
 setSelected(null);
 setSearch("");
 loadMovies();
+
 });
 
 }
@@ -262,9 +270,19 @@ return(
 
 <div className="topbar">
 
+<div className="title-area">
+
 <h1>
-{userName ? `Olá ${userName}. Seu Catálogo de Filmes 🎬` : "Seu Catálogo de Filmes 🎬"}
+{userName ? `Olá ${userName} 👋` : "Seu Catálogo de Filmes 🎬"}
 </h1>
+
+{userName && (
+<p className="subtitle">
+Seu Catálogo de Filmes 🎬
+</p>
+)}
+
+</div>
 
 <button className="logout" onClick={logout}>
 Logout
@@ -580,6 +598,12 @@ Fechar
 
 </div>
 
+)}
+
+{toast && (
+<div className="toast">
+{toast}
+</div>
 )}
 
 </div>

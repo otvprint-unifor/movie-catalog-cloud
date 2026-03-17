@@ -56,9 +56,26 @@ updateProfile(userCredential.user,{
 displayName:name
 });
 })
-.catch(()=>{
+.catch((error)=>{
+
+if(error.code === "auth/invalid-email"){
+setError("Email inválido");
+}
+
+else if(error.code === "auth/email-already-in-use"){
+setError("Este email já está em uso");
+}
+
+else if(error.code === "auth/weak-password"){
+setError("Senha muito fraca");
+}
+
+else{
 setError("Erro ao criar conta");
+}
+
 setLoading(false);
+
 });
 
 }
