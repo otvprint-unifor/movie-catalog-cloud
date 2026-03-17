@@ -35,10 +35,35 @@ app.use((req, res, next) => {
   next();
 });
 
+/**
+ * @swagger
+ * /:
+ *   get:
+ *     summary: Verifica se a API está funcionando
+ *     responses:
+ *       200:
+ *         description: API online
+ */
 app.get("/", (req, res) => {
   res.send("API Movie Catalog funcionando");
 });
 
+/**
+ * @swagger
+ * /movies/{userId}:
+ *   get:
+ *     summary: Retorna os filmes de um usuário
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID do usuário
+ *     responses:
+ *       200:
+ *         description: Lista de filmes
+ */
 app.get("/movies/:userId", async (req, res) => {
   try {
     const { userId } = req.params;
@@ -64,6 +89,21 @@ app.get("/movies/:userId", async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /movies:
+ *   post:
+ *     summary: Adiciona um novo filme
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     responses:
+ *       200:
+ *         description: Filme criado
+ */
 app.post("/movies", async (req, res) => {
   try {
     const {
@@ -114,6 +154,21 @@ app.post("/movies", async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /movies/{id}:
+ *   put:
+ *     summary: Atualiza um filme
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Filme atualizado
+ */
 app.put("/movies/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -130,6 +185,21 @@ app.put("/movies/:id", async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /movies/{id}:
+ *   delete:
+ *     summary: Remove um filme
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Filme removido
+ */
 app.delete("/movies/:id", async (req, res) => {
   try {
     const { id } = req.params;
