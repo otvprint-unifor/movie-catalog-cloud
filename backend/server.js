@@ -17,7 +17,7 @@ const swaggerOptions = {
     },
     servers: [
       {
-        url: "https://movie-catalog-cloud-production.up.railway.app"
+        url: "https://movie-catalog-grupo29-production.up.railway.app"
       }
     ]
   },
